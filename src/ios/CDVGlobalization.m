@@ -26,6 +26,53 @@
     currentLocale = CFLocaleCopyCurrent();
 }
 
+- (void)setPreferredLanguage:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* result = nil;
+    NSDictionary* language = [command argumentAtIndex:0];
+    id lang_value = [language valueForKey:@"language"];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:[NSArray arrayWithObjects:lang_value, nil] 
+                                              forKey:@"AppleLanguages"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    NSString* temp = lang_value;
+    NSString* lang = [[NSLocale preferredLanguages] objectAtIndex:0];
+    
+    if ([lang isEqualToString: temp]) {
+        NSDictionary* dictionary = [NSDictionary dictionaryWithObject:lang forKey:@"value"];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                               messageAsDictionary:dictionary];
+    } else {
+        NSMutableDictionary* dictionary = [NSMutableDictionary dictionaryWithCapacity:2];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dictionary];        
+    }
+    
+    [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
+
+}
+
+- (void)getPreferredLocalization:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* result = nil;
+    NSDictionary* dictionary = nil;
+    
+    NSString* localization = [NSBundle mainBundle].preferredLocalizations[0];
+
+    if (localization) {
+        dictionary = [NSDictionary dictionaryWithObject:localization forKey:@"value"];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+    } else {
+        NSMutableDictionary* dictionary = [NSMutableDictionary dictionaryWithCapacity:2];
+        [dictionary setValue:[NSNumber numberWithInt:CDV_UNKNOWN_ERROR] forKey:@"code"];
+        [dictionary setValue:@"Unknown error" forKey:@"message"];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dictionary];
+    }
+    
+    [self.commandDelegate sendPluginResult:result callbackId:[command callbackId]];
+
+}
+
 - (void)getPreferredLanguage:(CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* result = nil;

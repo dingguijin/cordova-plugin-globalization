@@ -39,6 +39,10 @@ typedef NSUInteger CDVGlobalizationError;
     CFLocaleRef currentLocale;
 }
 
+- (void)setPreferredLanguage:(CDVInvokedUrlCommand*)command;
+
+- (void)getPreferredLocalization:(CDVInvokedUrlCommand*)command;
+
 - (void)getPreferredLanguage:(CDVInvokedUrlCommand*)command;
 
 /**
