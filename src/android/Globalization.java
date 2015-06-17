@@ -42,7 +42,8 @@ import org.json.JSONObject;
 
 import android.annotation.TargetApi;
 import android.text.format.Time;
-
+import android.content.SharedPreferences;
+import android.content.Context;
 /**
  *
  */
@@ -60,8 +61,11 @@ public class Globalization extends CordovaPlugin  {
     public static final String GETNUMBERPATTERN = "getNumberPattern";
     public static final String GETCURRENCYPATTERN = "getCurrencyPattern";
     public static final String GETPREFERREDLANGUAGE = "getPreferredLanguage";
+    public static final String SETPREFERREDLANGUAGE = "setPreferredLanguage";
 
     //GlobalizationCommand Option Parameters
+    public static final String APP_LANGUAGE = "ppmessager_language";
+    public static final String LANGUAGE = "language";
     public static final String OPTIONS = "options";
     public static final String FORMATLENGTH = "formatLength";
     //public static final String SHORT = "short"; //default for dateToString format
@@ -95,6 +99,8 @@ public class Globalization extends CordovaPlugin  {
                 obj = getLocaleName();
             }else if (action.equals(GETPREFERREDLANGUAGE)){
                 obj = getPreferredLanguage();
+            }else if (action.equals(SETPREFERREDLANGUAGE)){
+                obj = setPreferredLanguage(data);
             } else if (action.equalsIgnoreCase(DATETOSTRING)) {
                 obj = getDateToString(data);
             }else if(action.equalsIgnoreCase(STRINGTODATE)){
@@ -214,7 +220,27 @@ public class Globalization extends CordovaPlugin  {
     private JSONObject getPreferredLanguage() throws GlobalizationError {
         JSONObject obj = new JSONObject();
         try {
-            obj.put("value", toBcp47Language(Locale.getDefault()));
+            SharedPreferences sharePref = this.cordova.getActivity().getPreferences(Context.MODE_PRIVATE);
+            String language = sharePref.getString(APP_LANGUAGE, toBcp47Language(Locale.getDefault()));
+            obj.put("value", language);
+            return obj;
+        } catch (Exception e) {
+            throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
+        }
+    }
+    /*
+     * @Description: ...
+     */
+    private JSONObject setPreferredLanguage(JSONArray data) throws GlobalizationError {
+        JSONObject obj = new JSONObject();
+        String language = new String();
+        try{
+            language = data.getJSONObject(0).getString(LANGUAGE);
+            SharedPreferences sharePref = this.cordova.getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharePref.edit();
+            editor.putString(APP_LANGUAGE, language);
+            editor.commit();
+            obj.put("value", language);
             return obj;
         } catch (Exception e) {
             throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
@@ -242,7 +268,7 @@ public class Globalization extends CordovaPlugin  {
             return obj.put("value",fmt.format(date));
         }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.FORMATTING_ERROR);
-        }
+        } 
     }
 
     /*
